@@ -71,4 +71,9 @@ typedef unsigned char char8_t;
 
 #define identdigits(X, S) idents(X, S) S digits(X, S)
 
+#define startswith(str, literal) \
+	(strncmp((char *) str, literal, sizeof(literal) - 1) == 0)
+#define exactly(str, literal, n) \
+	(((n) == (sizeof(literal) - 1)) && startswith(str, literal))
+
 #endif // !CHARM_H
