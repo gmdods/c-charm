@@ -6,24 +6,25 @@
 #define CONCAT(lhs, rhs) CAT(lhs, rhs)
 #define STRING(macro) #macro
 
+#define CHAR(c) (CONCAT(C_, c))
+
 #define EMPTY()
 #define COMMA() ,
 #define ID(c) c
 #define LPAREN (
 #define RPAREN )
 #define LPAREN_S(x) ( (x)
-#define RPAREN_S(x) (x) )
+#define RPAREN_S(x) x )
 #define EXPAND(x) x
-#define SINGLE(x, y) (y)
 
-#define cases(F) F(SINGLE, : case)
+#define cases(F) F(CHAR, : case)
 #define fallthrough ((void) 0)
 
-#define anyof(var, F) (EXPAND(LPAREN F((var) == RPAREN_S SINGLE, | LPAREN_S)))
-#define noneof(var, F) (EXPAND(LPAREN F((var) != RPAREN_S SINGLE, &LPAREN_S)))
+#define anyof(var, F) (EXPAND(LPAREN F((var) == RPAREN_S CHAR, | LPAREN_S)))
+#define noneof(var, F) (EXPAND(LPAREN F((var) != RPAREN_S CHAR, &LPAREN_S)))
 
-#define toenum(n, x) n = x
-#define enumerate(F) EXPAND(EMPTY F(() toenum, COMMA))
+#define toenum(c) c = CHAR(c)
+#define enumerate(NS, F) EXPAND(EMPTY F(() NS toenum, COMMA))
 
 #define many(F) EXPAND(EMPTY F((), COMMA))
 
@@ -32,83 +33,241 @@
 #ifndef CHARM_H
 #define CHARM_H
 
+enum chars {
+	C_SPACE = ' ',
+	C_TAB = '\t',
+	C_CR = '\r',
+	C_FEED = '\f',
+	C_VTAB = '\v',
+	C_LF = '\n',
+	C_LOWER_A = 'a',
+	C_LOWER_B = 'b',
+	C_LOWER_C = 'c',
+	C_LOWER_D = 'd',
+	C_LOWER_E = 'e',
+	C_LOWER_F = 'f',
+	C_LOWER_G = 'g',
+	C_LOWER_H = 'h',
+	C_LOWER_I = 'i',
+	C_LOWER_J = 'j',
+	C_LOWER_K = 'k',
+	C_LOWER_L = 'l',
+	C_LOWER_M = 'm',
+	C_LOWER_N = 'n',
+	C_LOWER_O = 'o',
+	C_LOWER_P = 'p',
+	C_LOWER_Q = 'q',
+	C_LOWER_R = 'r',
+	C_LOWER_S = 's',
+	C_LOWER_T = 't',
+	C_LOWER_U = 'u',
+	C_LOWER_V = 'v',
+	C_LOWER_W = 'w',
+	C_LOWER_X = 'x',
+	C_LOWER_Y = 'y',
+	C_LOWER_Z = 'z',
+	C_UPPER_A = 'A',
+	C_UPPER_B = 'B',
+	C_UPPER_C = 'C',
+	C_UPPER_D = 'D',
+	C_UPPER_E = 'E',
+	C_UPPER_F = 'F',
+	C_UPPER_G = 'G',
+	C_UPPER_H = 'H',
+	C_UPPER_I = 'I',
+	C_UPPER_J = 'J',
+	C_UPPER_K = 'K',
+	C_UPPER_L = 'L',
+	C_UPPER_M = 'M',
+	C_UPPER_N = 'N',
+	C_UPPER_O = 'O',
+	C_UPPER_P = 'P',
+	C_UPPER_Q = 'Q',
+	C_UPPER_R = 'R',
+	C_UPPER_S = 'S',
+	C_UPPER_T = 'T',
+	C_UPPER_U = 'U',
+	C_UPPER_V = 'V',
+	C_UPPER_W = 'W',
+	C_UPPER_X = 'X',
+	C_UPPER_Y = 'Y',
+	C_UPPER_Z = 'Z',
+	C_DIGIT_0 = '0',
+	C_DIGIT_1 = '1',
+	C_DIGIT_2 = '2',
+	C_DIGIT_3 = '3',
+	C_DIGIT_4 = '4',
+	C_DIGIT_5 = '5',
+	C_DIGIT_6 = '6',
+	C_DIGIT_7 = '7',
+	C_DIGIT_8 = '8',
+	C_DIGIT_9 = '9',
+	C_OPEN_PAREN = '(',
+	C_OPEN_SQUARE = '[',
+	C_OPEN_BRACES = '{',
+	C_CLOSE_PAREN = ')',
+	C_CLOSE_SQUARE = ']',
+	C_CLOSE_BRACES = '}',
+	C_SEMICOLON = ';',
+	C_COLON = ':',
+	C_PERIOD = '.',
+	C_COMMA = ',',
+	C_BACKTICK = '`',
+	C_QUOTE = '\'',
+	C_DOUBLE_QUOTE = '\"',
+	C_EQUAL = '=',
+	C_LEFT_ANGLE = '<',
+	C_RIGHT_ANGLE = '>',
+	C_TILDE = '~',
+	C_EXCLAMATION = '!',
+	C_PERCENT = '%',
+	C_CARAT = '^',
+	C_AMPERSAND = '&',
+	C_ASTERISK = '*',
+	C_UNDERSCORE = '_',
+	C_HYPHEN = '-',
+	C_PLUS = '+',
+	C_PIPE = '|',
+	C_SLASH = '/',
+	C_DOLLAR = '$',
+	C_BACKSLASH = '\\',
+	C_AT = '@',
+	C_HASH = '#',
+	C_QUESTION = '?',
+};
+
 #include <uchar.h>
 #ifndef char8_t
 typedef unsigned char char8_t;
 #endif // !char8_t
 
 #define lowers(X, S) \
-	X(LOWER_A, 'a') \
-	S X(LOWER_B, 'b') S X(LOWER_C, 'c') S X(LOWER_D, 'd') \
-	    S X(LOWER_E, 'e') S X(LOWER_F, 'f') S X(LOWER_G, 'g') \
-		S X(LOWER_H, 'h') S X(LOWER_I, 'i') S X(LOWER_J, 'j') \
-		    S X(LOWER_K, 'k') S X(LOWER_L, 'l') S X(LOWER_M, 'm') \
-			S X(LOWER_N, 'n') S X(LOWER_O, 'o') S X(LOWER_P, 'p') \
-			    S X(LOWER_Q, 'q') S X(LOWER_R, 'r') \
-				S X(LOWER_S, 's') S X(LOWER_T, 't') \
-				    S X(LOWER_U, 'u') S X(LOWER_V, 'v') \
-					S X(LOWER_W, 'w') S X(LOWER_X, 'x') \
-					    S X(LOWER_Y, 'y') \
-						S X(LOWER_Z, 'z')
+	X(LOWER_A) \
+	S X(LOWER_B) \
+	S X(LOWER_C) \
+	S X(LOWER_D) \
+	S X(LOWER_E) \
+	S X(LOWER_F) \
+	S X(LOWER_G) \
+	S X(LOWER_H) \
+	S X(LOWER_I) \
+	S X(LOWER_J) \
+	S X(LOWER_K) \
+	S X(LOWER_L) \
+	S X(LOWER_M) \
+	S X(LOWER_N) \
+	S X(LOWER_O) \
+	S X(LOWER_P) \
+	S X(LOWER_Q) \
+	S X(LOWER_R) \
+	S X(LOWER_S) \
+	S X(LOWER_T) \
+	S X(LOWER_U) \
+	S X(LOWER_V) \
+	S X(LOWER_W) \
+	S X(LOWER_X) \
+	S X(LOWER_Y) \
+	S X(LOWER_Z)
 
 #define uppers(X, S) \
-	X(UPPER_A, 'A') \
-	S X(UPPER_B, 'B') S X(UPPER_C, 'C') S X(UPPER_D, 'D') \
-	    S X(UPPER_E, 'E') S X(UPPER_F, 'F') S X(UPPER_G, 'G') \
-		S X(UPPER_H, 'H') S X(UPPER_I, 'I') S X(UPPER_J, 'J') \
-		    S X(UPPER_K, 'K') S X(UPPER_L, 'L') S X(UPPER_M, 'M') \
-			S X(UPPER_N, 'N') S X(UPPER_O, 'O') S X(UPPER_P, 'P') \
-			    S X(UPPER_Q, 'Q') S X(UPPER_R, 'R') \
-				S X(UPPER_S, 'S') S X(UPPER_T, 'T') \
-				    S X(UPPER_U, 'U') S X(UPPER_V, 'V') \
-					S X(UPPER_W, 'W') S X(UPPER_X, 'X') \
-					    S X(UPPER_Y, 'Y') \
-						S X(UPPER_Z, 'Z')
+	X(UPPER_A) \
+	S X(UPPER_B) \
+	S X(UPPER_C) \
+	S X(UPPER_D) \
+	S X(UPPER_E) \
+	S X(UPPER_F) \
+	S X(UPPER_G) \
+	S X(UPPER_H) \
+	S X(UPPER_I) \
+	S X(UPPER_J) \
+	S X(UPPER_K) \
+	S X(UPPER_L) \
+	S X(UPPER_M) \
+	S X(UPPER_N) \
+	S X(UPPER_O) \
+	S X(UPPER_P) \
+	S X(UPPER_Q) \
+	S X(UPPER_R) \
+	S X(UPPER_S) \
+	S X(UPPER_T) \
+	S X(UPPER_U) \
+	S X(UPPER_V) \
+	S X(UPPER_W) \
+	S X(UPPER_X) \
+	S X(UPPER_Y) \
+	S X(UPPER_Z)
 
 #define alphas(X, S) lowers(X, S) S uppers(X, S)
 
 #define digits(X, S) \
-	X(DIGIT_0, '0') \
-	S X(DIGIT_1, '1') S X(DIGIT_2, '2') S X(DIGIT_3, '3') \
-	    S X(DIGIT_4, '4') S X(DIGIT_5, '5') S X(DIGIT_6, '6') \
-		S X(DIGIT_7, '7') S X(DIGIT_8, '8') S X(DIGIT_9, '9')
+	X(DIGIT_0) \
+	S X(DIGIT_1) \
+	S X(DIGIT_2) \
+	S X(DIGIT_3) \
+	S X(DIGIT_4) \
+	S X(DIGIT_5) \
+	S X(DIGIT_6) \
+	S X(DIGIT_7) \
+	S X(DIGIT_8) \
+	S X(DIGIT_9)
 
 #define alphadigits(X, S) alphas(X, S) S digits(X, S)
 
-#define blanks(X, S) X(SPACE, ' ') S X(TAB, '\t')
+#define blanks(X, S) X(SPACE) S X(TAB)
 
 #define linespaces(X, S) \
-	blanks(X, S) S X(CR, '\r') S X(FEED, '\f') S X(VTAB, '\v')
-#define spaces(X, S) linespaces(X, S) S X(LF, '\n')
+	blanks(X, S) S X(CR) \
+	S X(FEED) \
+	S X(VTAB)
+#define spaces(X, S) linespaces(X, S) S X(LF)
 
 #define openbrackets(X, S) \
-	X(OPEN_PAREN, '(') S X(OPEN_SQUARE, '[') S X(OPEN_BRACES, '{')
+	X(OPEN_PAREN) S X(OPEN_SQUARE) \
+	S X(OPEN_BRACES)
 #define closebrackets(X, S) \
-	X(CLOSE_PAREN, ')') S X(CLOSE_SQUARE, ']') S X(CLOSE_BRACES, '}')
+	X(CLOSE_PAREN) S X(CLOSE_SQUARE) \
+	S X(CLOSE_BRACES)
 #define brackets(X, S) openbrackets(X, S) S closebrackets(X, S)
 
 #define points(X, S) \
-	X(SEMICOLON, ';') S X(COLON, ':') S X(PERIOD, '.') S X(COMMA, ',')
+	X(SEMICOLON) S X(COLON) \
+	S X(PERIOD) \
+	S X(COMMA)
 
-#define quotes(X, S) X(BACKTICK, '`') S X(QUOTE, '\'') S X(DOUBLE_QUOTE, '\"')
+#define quotes(X, S) \
+	X(BACKTICK) S X(QUOTE) \
+	S X(DOUBLE_QUOTE)
+
+#define orders(X, S) \
+	X(EQUAL) S X(LEFT_ANGLE) \
+	S X(RIGHT_ANGLE)
 
 #define mathematics(X, S) \
-	X(TILDE, '~') \
-	S X(EXCLAMATION, '!') S X(PERCENT, '%') S X(CARAT, '^') \
-	    S X(AMPERSAND, '&') S X(ASTERISK, '*') S X(UNDERSCORE, '_') \
-		S X(HYPHEN, '-') S X(EQUAL, '=') S X(PLUS, '+') S X(PIPE, '|') \
-		    S X(LEFT_ANGLE, '<') S X(RIGHT_ANGLE, '>') S X(SLASH, '/')
+	orders(X, S) S X(TILDE) \
+	S X(EXCLAMATION) \
+	S X(PERCENT) \
+	S X(CARAT) \
+	S X(AMPERSAND) \
+	S X(ASTERISK) \
+	S X(UNDERSCORE) \
+	S X(HYPHEN) \
+	S X(PLUS) \
+	S X(PIPE) \
+	S X(SLASH)
 
 #define punct(X, S) \
 	brackets(X, S) S points(X, S) \
 	S quotes(X, S) \
 	S mathematics(X, S) \
-	S X(DOLLAR, '$') S X(BACKSLASH, '\\') S X(AT, '@') S X(HASH, '#') \
-	    S X(QUESTION, '?')
+	S X(DOLLAR) \
+	S X(BACKSLASH) \
+	S X(AT) \
+	S X(HASH) \
+	S X(QUESTION)
 
 #define graphs(X, S) alphadigits(X, S) S punct(X, S)
 
-#define idents(X, S) alphas(X, S) S X(UNDERSCORE, '_')
+#define idents(X, S) alphas(X, S) S X(UNDERSCORE)
 
 #define lexemes(X, S) idents(X, S) S digits(X, S)
 
