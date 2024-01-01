@@ -6,8 +6,9 @@
 #define CONCAT(lhs, rhs) CAT(lhs, rhs)
 #define STRING(macro) #macro
 
-#define CHAR(c) CONCAT(C_, c)
-#define CHAR_S(c) (CHAR(c))
+#define CHAR(c) C_##c
+#define CHAR_S(c) (C_##c)
+#define CHAR_P(c) (c, C_##c)
 
 #define EMPTY()
 #define COMMA() ,
@@ -28,7 +29,7 @@
 #define anyof(var, F) (EXPAND(LPAREN F((var) == RPAREN_S CHAR_S, | LPAREN_S)))
 #define noneof(var, F) (EXPAND(LPAREN F((var) != RPAREN_S CHAR_S, &LPAREN_S)))
 
-#define list(Fn, F) EXPAND(EMPTY F(() Fn, COMMA))
+#define list(Fn, F) EXPAND(EMPTY F(() Fn CHAR_P, COMMA))
 
 #endif // !CHARM_MACROS_H
 

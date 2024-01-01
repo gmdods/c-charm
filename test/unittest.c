@@ -36,8 +36,13 @@ unittest("lexer") {
 						"\tvar + (letter - 'a') * 3\n"
 						"else 30";
 #define equal(c) (0xd + ((c) ^ '='))
-#define enum_tag(c) c = CHAR(c)
-#define enum_equal(c) CONCAT(c, _EQUAL) = equal(CHAR(c))
+
+#define LEFT_ANGLE LESS
+#define RIGHT_ANGLE GREATER
+
+#define enum_tag(n, c) n = c
+#define enum_equal(n, c) CONCAT(n, _EQUAL) = equal(c)
+
 	enum tags {
 		LET,
 		IF,
@@ -60,7 +65,7 @@ unittest("lexer") {
 	    {IDENT, str + 18, 6},   {'=', str + 25, 1},
 	    {'\'', str + 28, 1},    {';', str + 30, 1},
 	    {IF, str + 32, 2},	    {'(', str + 35, 1},
-	    {IDENT, str + 36, 3},   {LEFT_ANGLE_EQUAL, str + 40, 2},
+	    {IDENT, str + 36, 3},   {LESS_EQUAL, str + 40, 2},
 	    {DECIMAL, str + 43, 2}, {')', str + 45, 1},
 	    {IDENT, str + 48, 3},   {'+', str + 52, 1},
 	    {'(', str + 54, 1},	    {IDENT, str + 55, 6},
