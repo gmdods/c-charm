@@ -57,6 +57,9 @@ typedef unsigned char char8_t;
 
 #define blanks(X, S) X(' ') S X('\t')
 
+#define linespaces(X, S) blanks(X, S) S X('\r') S X('\f') S X('\v')
+#define spaces(X, S) linespaces(X, S) S X('\n')
+
 #define punct(X, S) \
 	X('`') \
 	S X('~') S X('!') S X('@') S X('#') S X('$') S X('%') S X('^') \
@@ -69,7 +72,7 @@ typedef unsigned char char8_t;
 
 #define idents(X, S) alphas(X, S) S X('_')
 
-#define identdigits(X, S) idents(X, S) S digits(X, S)
+#define lexemes(X, S) idents(X, S) S digits(X, S)
 
 #define startswith(str, literal) \
 	(strncmp((char *) str, literal, sizeof(literal) - 1) == 0)

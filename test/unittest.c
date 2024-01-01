@@ -30,8 +30,8 @@ unittest("anyof") {
 
 unittest("lexer") {
 
-	const char8_t * str =
-	    (const char8_t *) "let var = 30; let letter = 'a';";
+	const char8_t * str = (const char8_t *) "let var = 30;\n"
+						"let letter = 'a';";
 	enum tags { LET, IDENT, EQUAL, DECIMAL, CHAR, SEMICOLON };
 	const struct token {
 		enum tags tag;
@@ -48,9 +48,14 @@ unittest("lexer") {
 
 	char8_t c = '\0';
 	size_t index = 0;
+	size_t linenum = 0, lineindex = 0;
 	for (const char8_t *it = str, *ptr = 0;;)
 		switch (c = *it) {
-		case cases(blanks): ++it; break;
+		case cases(linespaces): ++it; break;
+		case '\n':
+			++it, ++linenum;
+			lineindex = it - str;
+			break;
 		case '=':
 			ensure_token(expected[index++],
 				     ((struct token){EQUAL, it, 1}));
@@ -69,7 +74,7 @@ unittest("lexer") {
 			++it;
 			break;
 		case cases(alphas):
-			for (ptr = it; (c = *(++it)) && anyof(c, identdigits);)
+			for (ptr = it; (c = *(++it)) && anyof(c, lexemes);)
 				;
 			if (exactly(ptr, "let", it - ptr))
 				ensure_token(
@@ -89,5 +94,6 @@ unittest("lexer") {
 		default: ensure(false); break;
 		case '\0': goto token_ret;
 		}
-token_ret:;
+token_ret:
+	ensure(linenum == 1), ensure(lineindex == 14);
 }
