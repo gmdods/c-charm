@@ -6,7 +6,8 @@
 #define CONCAT(lhs, rhs) CAT(lhs, rhs)
 #define STRING(macro) #macro
 
-#define CHAR(c) (CONCAT(C_, c))
+#define CHAR(c) CONCAT(C_, c)
+#define CHAR_S(c) (CHAR(c))
 
 #define EMPTY()
 #define COMMA() ,
@@ -18,15 +19,16 @@
 #define EXPAND(x) x
 
 #define cases(F) F(CHAR, : case)
+#if __has_attribute(fallthrough)
+#define fallthrough __attribute__((fallthrough))
+#else
 #define fallthrough ((void) 0)
+#endif
 
-#define anyof(var, F) (EXPAND(LPAREN F((var) == RPAREN_S CHAR, | LPAREN_S)))
-#define noneof(var, F) (EXPAND(LPAREN F((var) != RPAREN_S CHAR, &LPAREN_S)))
+#define anyof(var, F) (EXPAND(LPAREN F((var) == RPAREN_S CHAR_S, | LPAREN_S)))
+#define noneof(var, F) (EXPAND(LPAREN F((var) != RPAREN_S CHAR_S, &LPAREN_S)))
 
-#define toenum(c) c = CHAR(c)
-#define enumerate(NS, F) EXPAND(EMPTY F(() NS toenum, COMMA))
-
-#define many(F) EXPAND(EMPTY F((), COMMA))
+#define list(Fn, F) EXPAND(EMPTY F(() Fn, COMMA))
 
 #endif // !CHARM_MACROS_H
 
@@ -238,12 +240,12 @@ typedef unsigned char char8_t;
 	X(BACKTICK) S X(QUOTE) \
 	S X(DOUBLE_QUOTE)
 
-#define orders(X, S) \
+#define compares(X, S) \
 	X(EQUAL) S X(LEFT_ANGLE) \
 	S X(RIGHT_ANGLE)
 
 #define mathematics(X, S) \
-	orders(X, S) S X(TILDE) \
+	X(TILDE) \
 	S X(EXCLAMATION) \
 	S X(PERCENT) \
 	S X(CARAT) \
@@ -255,17 +257,18 @@ typedef unsigned char char8_t;
 	S X(PIPE) \
 	S X(SLASH)
 
-#define punct(X, S) \
+#define punctuations(X, S) \
 	brackets(X, S) S points(X, S) \
 	S quotes(X, S) \
 	S mathematics(X, S) \
+	S compares(X, S) \
 	S X(DOLLAR) \
 	S X(BACKSLASH) \
 	S X(AT) \
 	S X(HASH) \
 	S X(QUESTION)
 
-#define graphs(X, S) alphadigits(X, S) S punct(X, S)
+#define graphs(X, S) alphadigits(X, S) S punctuations(X, S)
 
 #define idents(X, S) alphas(X, S) S X(UNDERSCORE)
 

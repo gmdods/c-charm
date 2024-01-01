@@ -35,13 +35,18 @@ unittest("lexer") {
 						"if (var <= 32)\n"
 						"\tvar + (letter - 'a') * 3\n"
 						"else 30";
+#define equal(c) (0xd + ((c) ^ '='))
+#define enum_tag(c) c = CHAR(c)
+#define enum_equal(c) CONCAT(c, _EQUAL) = equal(CHAR(c))
 	enum tags {
 		LET,
 		IF,
 		ELSE,
 		IDENT = 'i',
 		DECIMAL = 'd',
-		enumerate(, punct), // add namespace
+		list(enum_equal, compares),
+		list(enum_tag, punctuations),
+
 	};
 
 	const struct token {
@@ -49,20 +54,20 @@ unittest("lexer") {
 		const char8_t * ptr;
 		size_t span;
 	} expected[] = {
-	    {LET, str + 0, 3},	  {IDENT, str + 4, 3},
-	    {'=', str + 8, 1},	  {DECIMAL, str + 10, 2},
-	    {';', str + 12, 1},	  {LET, str + 14, 3},
-	    {IDENT, str + 18, 6}, {'=', str + 25, 1},
-	    {'\'', str + 28, 1},  {';', str + 30, 1},
-	    {IF, str + 32, 2},	  {'(', str + 35, 1},
-	    {IDENT, str + 36, 3}, {'<', str + 40, 1},
-	    {'=', str + 41, 1},	  {DECIMAL, str + 43, 2},
-	    {')', str + 45, 1},	  {IDENT, str + 48, 3},
-	    {'+', str + 52, 1},	  {'(', str + 54, 1},
-	    {IDENT, str + 55, 6}, {'-', str + 62, 1},
-	    {'\'', str + 65, 1},  {')', str + 67, 1},
-	    {'*', str + 69, 1},	  {DECIMAL, str + 71, 1},
-	    {ELSE, str + 73, 4},  {DECIMAL, str + 78, 2},
+	    {LET, str + 0, 3},	    {IDENT, str + 4, 3},
+	    {'=', str + 8, 1},	    {DECIMAL, str + 10, 2},
+	    {';', str + 12, 1},	    {LET, str + 14, 3},
+	    {IDENT, str + 18, 6},   {'=', str + 25, 1},
+	    {'\'', str + 28, 1},    {';', str + 30, 1},
+	    {IF, str + 32, 2},	    {'(', str + 35, 1},
+	    {IDENT, str + 36, 3},   {LEFT_ANGLE_EQUAL, str + 40, 2},
+	    {DECIMAL, str + 43, 2}, {')', str + 45, 1},
+	    {IDENT, str + 48, 3},   {'+', str + 52, 1},
+	    {'(', str + 54, 1},	    {IDENT, str + 55, 6},
+	    {'-', str + 62, 1},	    {'\'', str + 65, 1},
+	    {')', str + 67, 1},	    {'*', str + 69, 1},
+	    {DECIMAL, str + 71, 1}, {ELSE, str + 73, 4},
+	    {DECIMAL, str + 78, 2},
 	};
 #define ensure_token(a, b) \
 	ensure(((a).tag == (b).tag) & ((a).ptr == (b).ptr) & \
@@ -75,15 +80,22 @@ unittest("lexer") {
 	for (const char8_t *it = str, *ptr = 0;;)
 		switch (c = *it) {
 		case cases(linespaces): ++it; break;
+		case '#': // Comment
+			while ((c = *(++it)) && (c != '\n'))
+				;
+			fallthrough;
 		case '\n':
 			++it, ++linenum;
 			lineindex = it - str;
 			break;
-		case '#': // Comment
-			while ((c = *(++it)) && (c != '\n'))
-				;
-			++it;
-			break;
+		case cases(compares):
+			if (*(it + 1) == '=') {
+				ret = (struct token){equal(c), it, 2};
+				ensure_token(expected[index], ret), ++index;
+				it += 2;
+				break;
+			}
+			fallthrough;
 		case cases(mathematics):
 		case cases(points):
 		case cases(brackets):
