@@ -1,10 +1,8 @@
 #ifndef UNITTEST_MAIN
 #include "unittest.h"
-#include <assert.h>
 #include <ctype.h>
 #include <stdbool.h>
 #include <stdio.h>
-#include <string.h>
 
 #include "../charm.h"
 
@@ -44,14 +42,15 @@ unittest("lexer") {
 #define enum_equal(n, c) CONCAT(n, _EQUAL) = equal(c)
 
 	enum tags {
-		LET,
-		IF,
-		ELSE,
 		IDENT = 'i',
 		DECIMAL = 'd',
 		list(enum_equal, compares),
 		list(enum_tag, punctuations),
-
+		SIZE_ASCII = C_ASCII + 1U,
+		LET,
+		IF,
+		ELSE,
+		SIZE_KEYWORD = C_UTF8,
 	};
 
 	const struct token {

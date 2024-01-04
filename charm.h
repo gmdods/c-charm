@@ -36,6 +36,12 @@
 #ifndef CHARM_H
 #define CHARM_H
 
+#include <string.h>
+
+#ifndef char8_t
+typedef unsigned char char8_t;
+#endif // !char8_t
+
 enum chars {
 	C_SPACE = ' ',
 	C_TAB = '\t',
@@ -137,12 +143,10 @@ enum chars {
 	C_AT = '@',
 	C_HASH = '#',
 	C_QUESTION = '?',
+	C_ASCII = 0x7f,
+	C_UTF8 = 0xc0,
+	C_BYTE = 0x100,
 };
-
-#include <uchar.h>
-#ifndef char8_t
-typedef unsigned char char8_t;
-#endif // !char8_t
 
 #define lowers(X, S) \
 	X(LOWER_A) \
