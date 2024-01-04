@@ -11,13 +11,11 @@
 #define CHAR_P(c) (c, C_##c)
 
 #define EMPTY()
-#define COMMA() ,
 #define ID(c) c
+#define EXPAND(x) x
+#define COMMA() ,
 #define LPAREN (
 #define RPAREN )
-#define LPAREN_S(x) ( (x)
-#define RPAREN_S(x) x )
-#define EXPAND(x) x
 
 #define cases(F) F(CHAR, : case)
 #if __has_attribute(fallthrough)
@@ -26,8 +24,12 @@
 #define fallthrough ((void) 0)
 #endif
 
-#define anyof(var, F) (EXPAND(LPAREN F((var) == RPAREN_S CHAR_S, | LPAREN_S)))
-#define noneof(var, F) (EXPAND(LPAREN F((var) != RPAREN_S CHAR_S, &LPAREN_S)))
+#define PAREN_OR() ) | (
+#define PAREN_AND() ) & (
+#define anyof(var, F) \
+	(LPAREN EXPAND(EMPTY F(()(var) == CHAR_S, PAREN_OR)) RPAREN)
+#define noneof(var, F) \
+	(LPAREN EXPAND(EMPTY F(()(var) != CHAR_S, PAREN_AND)) RPAREN)
 
 #define list(Fn, F) EXPAND(EMPTY F(() Fn CHAR_P, COMMA))
 
